@@ -1,0 +1,9 @@
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[cluster]
+ubuntu18-slurm-01
+ubuntu18-slurm-02
+ubuntu18-slurm-03
+ubuntu18-slurm-04
+
