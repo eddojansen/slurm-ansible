@@ -20,6 +20,13 @@
         enabled: no
       tags: cleanup
 
+    - name: Stop munge
+      service:
+        name: munge
+        state: stopped
+        enabled: no
+      tags: cleanup      
+
     - name: Remove packages Centos
       yum:
         name: "{{ packages }}"
@@ -28,6 +35,7 @@
       vars:
         packages:
         - slurm-wlm
+        - munge  
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
       tags: cleanup
 
@@ -39,6 +47,7 @@
       vars:
         packages:
         - slurm-wlm
+        - munge
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
       tags: cleanup
 
@@ -50,6 +59,7 @@
         - /etc/slurm-llnl
         - /var/run/slurm-llnl
         - /var/spool/slurm-lln
+        - /etc/munge  
       tags: cleanup
 
     - name: Install packages Centos
@@ -102,7 +112,7 @@
     - name: Ensure Chrony is running
       service:
         name: chronyd
-        state: started
+        state: restarted
         enabled: yes
       ignore_errors: yes
       tags: packages
@@ -151,12 +161,12 @@
         dest: /etc/fstab
         regexp: '^/[\S]+\s+swap\s+swap'
         state: absent
-      tags: prep
+      tags: tune
 
     - name: Disable swap
       shell:
         cmd: swapoff -a
-      tags: prep
+      tags: tune
 
     - name: Ensure irqbalance is set to oneshot - Centos
       lineinfile:
@@ -190,10 +200,10 @@
       file:
         path: /var/spool/slurm-llnl
         state: directory
-        recurse: yes
         owner: slurm
         group: slurm
-        mode: 0755
+        mode: u=rwX,g=rX,o=rX
+        recurse: yes
 
     - name: Create and modify permissions run directory
       file:
@@ -234,7 +244,7 @@
           SlurmdPidFile=/var/run/slurm-llnl/slurmd.pid
           SlurmdSpoolDir=/var/spool/slurm-llnl
           SlurmUser=slurm
-          SlurmdUser=root
+          #SlurmdUser=root
           StateSaveLocation=/var/spool/slurm-llnl
           SwitchType=switch/none
           TaskPlugin=task/none
@@ -248,31 +258,27 @@
           PartitionName=debug Nodes="{{ NODES }}" Default=YES MaxTime=INFINITE State=UP
       tags: config
 
-    - name: format munge key
-      shell:
-        cmd: dd if=/dev/urandom of=/etc/munge/munge.key bs=1c count=4M
-      tags: config
-      
-    - name: set permissions  munge key
-      shell:
-        cmd: chmod a-r /etc/munge/munge.key
-      tags: config
+- hosts: controller
+  vars_files:
+    - vars/slurm.yaml
+  become: yes
+  tasks:  
 
-    - name: permissions munge key
-      shell:
-        cmd: chmod u-w /etc/munge/munge.key
-      tags: config
+    - name: Copy munge to local
+      fetch:
+        src: /etc/munge/munge.key
+        dest: templates/
+        flat: yes
+        mode: preserve
+      tags: services
 
-    - name: permissions munge key
-      shell:
-        cmd: chmod u+r /etc/munge/munge.key
-      tags: config
-
-    - name: set munge permissions
-      file:
-        path: /etc/munge/munge.key
-        owner: munge
-        group: munge
+    - name: Start munge
+      systemd:
+        name: munge
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      tags: services
 
     - name: Start slurmctld
       systemd:
@@ -280,6 +286,45 @@
         state: restarted
         enabled: yes
         daemon_reload: yes
+      tags: services
+
+    - name: Start slurmd
+      systemd:
+        name: slurmd
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      tags: services
+
+- hosts: cluster,!controller
+  vars_files:
+    - vars/slurm.yaml
+  become: yes
+  tasks: 
+
+    - name: Copy file with owner and permission
+      copy:
+        src: templates/munge.key
+        dest: /etc/munge/
+        owner: munge
+        group: munge
+        mode: a-r,u-w,u+r
+        force: yes
+
+    - name: Start munge
+      systemd:
+        name: munge
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      tags: services
+
+    - name: Start slurmctld
+      systemd:
+        name: slurmctld      
+        state: stopped
+        enabled: no
+        daemon_reload: no
       tags: services
 
     - name: Start slurmd
