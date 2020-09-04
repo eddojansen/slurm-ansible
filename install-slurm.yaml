@@ -18,6 +18,7 @@
         name: slurmd     
         state: stopped
         enabled: no
+      ignore_errors: yes        
       tags: cleanup
 
     - name: Stop munge
@@ -25,6 +26,7 @@
         name: munge
         state: stopped
         enabled: no
+      ignore_errors: yes        
       tags: cleanup      
 
     - name: Remove packages Centos
@@ -37,6 +39,7 @@
         - slurm-wlm
         - munge  
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+      ignore_errors: yes      
       tags: cleanup
 
     - name: Remove packages Ubuntu
@@ -49,6 +52,7 @@
         - slurm-wlm
         - munge
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+      ignore_errors: yes
       tags: cleanup
 
     - name: delete slurm config if it exists
@@ -59,7 +63,8 @@
         - /etc/slurm-llnl
         - /var/run/slurm-llnl
         - /var/spool/slurm-lln
-        - /etc/munge  
+        - /etc/munge
+      ignore_errors: yes
       tags: cleanup
 
     - name: Install packages Centos
@@ -254,7 +259,7 @@
           AccountingStorageType=accounting_storage/none
           ClusterName="{{ CLUSTERNAME }}"
           JobAcctGatherType=jobacct_gather/none
-          NodeName="{{ NODENAME }}" NodeAddr="{{ NODEADDR }}" CPUs="{{ CPUS }}" RealMemory="{{ REALMEMORY }}" Sockets="{{ SOCKETS }}" CoresPerSocket="{{ CORESPERSOCKET }}" ThreadsPerCore="{{ THREADSPERCORE }}"  State=UNKNOWN
+          NodeName="{{ NODENAME }}" CPUs="{{ CPUS }}" RealMemory="{{ REALMEMORY }}" Sockets="{{ SOCKETS }}" CoresPerSocket="{{ CORESPERSOCKET }}" ThreadsPerCore="{{ THREADSPERCORE }}" State=UNKNOWN
           PartitionName=debug Nodes="{{ NODES }}" Default=YES MaxTime=INFINITE State=UP
       tags: config
 
