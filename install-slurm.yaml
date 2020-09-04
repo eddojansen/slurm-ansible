@@ -244,7 +244,7 @@
           SlurmdPidFile=/var/run/slurm-llnl/slurmd.pid
           SlurmdSpoolDir=/var/spool/slurm-llnl
           SlurmUser=slurm
-          #SlurmdUser=root
+          SlurmdUser=root
           StateSaveLocation=/var/spool/slurm-llnl
           SwitchType=switch/none
           TaskPlugin=task/none
