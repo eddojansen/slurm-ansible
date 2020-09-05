@@ -241,7 +241,6 @@
         path: /etc/slurm-llnl/slurm.conf
         block: |
           ControlMachine="{{ CONTROLMACHINE }}"
-          ControlAddr="{{ CONTROLADDR }}"
           MpiDefault=none
           ProctrackType=proctrack/pgid
           ReturnToService=2

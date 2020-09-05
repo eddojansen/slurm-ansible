@@ -1,9 +1,8 @@
 CONTROLMACHINE: ejansen-slurm1
-CONTROLADDR: 10.128.0.107
 CLUSTERNAME: cluster1
 NODENAME:  ejansen-slurm[1-2]
 #NODEADDR: 172.16.[1-2]
-NODES: ubuntu18-slurm-0[1-4]
+NODES: ejansen-slurm[1-2]
 CPUS: 1 # slurmd -C
 REALMEMORY: 29460 # slurmd -C
 SOCKETS: 1 # slurmd -C
