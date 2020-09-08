@@ -267,7 +267,7 @@
     - name: Copy munge to local
       fetch:
         src: /etc/munge/munge.key
-        dest: templates/
+        dest: ./ 
         flat: yes
         mode: preserve
       tags: services
@@ -304,7 +304,7 @@
 
     - name: Copy file with owner and permission
       copy:
-        src: templates/munge.key
+        src: munge.key
         dest: /etc/munge/
         owner: munge
         group: munge
