@@ -1,0 +1,69 @@
+---
+- hosts: cluster
+  vars_files:
+    - vars/slurm.yaml
+  become: yes
+  tasks:
+
+    - apt_repository:
+        repo: 'ppa:graphics-drivers'
+
+    - name: add cuda repo keys
+      shell:
+        cmd: apt-key adv --fetch-keys  http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
+      tags: config
+ 
+    - name: add cuda repo
+      shell:
+        cmd: bash -c 'echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list'
+      tags: config
+
+    - name: add cuda_learn repo
+      shell:
+        cmd: bash -c 'echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda_learn.list'
+      tags: config
+        
+    - name: Install packages Ubuntu
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+      vars:
+        packages:
+        - cuda-10-1
+        - libcudnn7
+        - nvidia-cuda-toolkit  
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+      tags: packages
+
+- hosts: cluster
+  vars_files:
+    - vars/slurm.yaml
+  become: no
+  tasks:    
+  
+    - name: Configure profile for cuda
+      blockinfile:
+        path: ~/.profile
+        block: |
+          # set PATH for cuda 10.1 installation
+          if [ -d "/usr/local/cuda-10.1/bin/" ]; then
+          export PATH=/usr/local/cuda-10.1/bin${PATH:+:${PATH}}
+          export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+          fi
+      tags: config
+ 
+    - name: Activate profile
+      shell:
+        cmd: . ~/.profile
+      tags: config
+
+    - name: show cuda version
+      shell:
+        cmd: nvcc --version 
+      tags: config
+
+    - name: show nvidia-smi tool
+      shell:
+        cmd: nvidia-smi
+      tags: config
