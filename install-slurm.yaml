@@ -261,7 +261,7 @@
           ClusterName="{{ CLUSTERNAME }}"
           JobAcctGatherType=jobacct_gather/none
           NodeName="{{ NODENAME }}" CPUs="{{ CPUS }}" RealMemory="{{ REALMEMORY }}" Sockets="{{ SOCKETS }}" CoresPerSocket="{{ CORESPERSOCKET }}" ThreadsPerCore="{{ THREADSPERCORE }}" State=UNKNOWN
-          PartitionName=debug Nodes="{{ NODES }}" Default=YES MaxTime=INFINITE State=UP
+          PartitionName=debug Nodes="{{ NODENAME }}" Default=YES MaxTime=INFINITE State=UP
       tags: config
 
 - hosts: controller
