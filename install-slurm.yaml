@@ -37,7 +37,7 @@
       vars:
         packages:
         - slurm-wlm
-        - munge  
+        - munge
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
       ignore_errors: yes      
       tags: cleanup
@@ -65,7 +65,7 @@
         - /var/spool/slurm-lln
         - /etc/munge
       ignore_errors: yes
-      tags: cleanup
+      tags: cleanup      
 
     - name: Install packages Centos
       yum:
@@ -79,7 +79,8 @@
         - htop
         - netdata
         - irqbalance
-        - slurm-wlm  
+        - nfs-utils  
+        - slurm-wlm
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
       tags: packages
 
@@ -96,6 +97,7 @@
         - netdata
         - tuned
         - irqbalance
+        - nfs-common  
         - slurm-wlm  
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
       tags: packages
