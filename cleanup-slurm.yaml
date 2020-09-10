@@ -1,0 +1,68 @@
+---
+- hosts: cluster
+  vars_files:
+    - vars/slurm.yaml
+  become: yes
+  tasks:
+
+    - name: Stop slurmctld
+      service:
+        name: slurmctld
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+      tags: cleanup
+
+    - name: Stop slurmd
+      service:
+        name: slurmd
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+      tags: cleanup
+
+    - name: Stop munge
+      service:
+        name: munge
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+      tags: cleanup
+
+    - name: Remove packages Centos
+      yum:
+        name: "{{ packages }}"
+        state: absent
+        update_cache: no
+      vars:
+        packages:
+        - slurm-wlm
+        - munge
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+      ignore_errors: yes
+      tags: cleanup
+
+    - name: Remove packages Ubuntu
+      apt:
+        name: "{{ packages }}"
+        state: absent
+        update_cache: no
+      vars:
+        packages:
+        - slurm-wlm
+        - munge
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+      ignore_errors: yes
+      tags: cleanup
+
+    - name: delete slurm config if it exists
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/slurm-llnl
+        - /var/run/slurm-llnl
+        - /var/spool/slurm-lln
+        - /etc/munge
+      ignore_errors: yes
+      tags: cleanup
