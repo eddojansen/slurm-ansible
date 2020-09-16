@@ -81,6 +81,7 @@
         - irqbalance
         - nfs-utils  
         - slurm-wlm
+        - java-8-openjdk
       when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
       tags: packages
 
@@ -98,7 +99,8 @@
         - tuned
         - irqbalance
         - nfs-common  
-        - slurm-wlm  
+        - slurm-wlm
+        - openjdk-8-jre-headless
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
       tags: packages
 
