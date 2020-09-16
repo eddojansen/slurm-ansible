@@ -1,9 +1,9 @@
-CONTROLMACHINE: ubuntu18-slurm-01
+CONTROLMACHINE: ejansen-1
 CLUSTERNAME: cluster1
-NODENAME:  ubuntu18-slurm-0[1-4]
-CPUS: 2 # slurmd -C
-REALMEMORY: 16040 # slurmd -C
-SOCKETS: 2 # slurmd -C
-CORESPERSOCKET: 1 # slurmd -C
-THREADSPERCORE: 1 # slurmd -C
+NODENAME:  ejansen-[1-2]
+CPUS: 8 # slurmd -C
+REALMEMORY: 30100 # slurmd -C
+SOCKETS: 1 # slurmd -C
+CORESPERSOCKET: 4 # slurmd -C
+THREADSPERCORE: 2 # slurmd -C
 
