@@ -1,7 +1,5 @@
 ---
-- hosts: cluster
-  vars_files:
-    - vars/slurm.yaml
+- hosts: all
   become: yes
   tasks:
 
@@ -23,11 +21,6 @@
         cmd: bash -c 'echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda_learn.list'
       tags: config
 
-    - name: add nvidia-container-runtime repo
-      shell:
-        cmd: wget https://nvidia.github.io/nvidia-container-runtime/ubuntu18.04/nvidia-container-runtime.list  > /etc/apt/sources.list.d/nvidia-container-runtime.list
-      tags: config
-
     - name: Install packages Ubuntu
       apt:
         name: "{{ packages }}"
@@ -38,38 +31,40 @@
         - cuda-10-1
         - libcudnn7
         - nvidia-cuda-toolkit
-        - nvidia-container-runtime  
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
       tags: packages
 
-- hosts: cluster
-  vars_files:
-    - vars/slurm.yaml
-  become: no
-  tasks:    
+    - name: 'Add {{ extra_path }} to PATH'
+      lineinfile:
+        path: /etc/environment
+        regexp: 'PATH=(["])((?!.*?/usr/local/cuda-10.1/bin${PATH:+:${PATH}}).*?)(["])$'
+        line: 'PATH=\1\2:/usr/local/cuda-10.1/bin${PATH:+:${PATH}}\3'
+        backrefs: yes
+      when: lookup('file', '/etc/environment') is search('^\s*PATH\s*=')
+      tags: test1
+    
+    - name: Adding LD_LIBRARY to /etc/environment
+      lineinfile:
+        dest: /etc/environment
+        line: 'LD_LIBRARY_PATH="/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"'
+        insertafter: 'EOF'
+        regexp: 'LD_LIBRARY_PATH="/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"'
+        state: present
+      become: yes
+      tags: config
   
-    - name: Configure profile for cuda
-      blockinfile:
-        path: ~/.profile
-        block: |
-          # set PATH for cuda 10.1 installation
-          if [ -d "/usr/local/cuda-10.1/bin/" ]; then
-          export PATH=/usr/local/cuda-10.1/bin${PATH:+:${PATH}}
-          export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-          fi
-      tags: config
- 
-    - name: Activate profile
-      shell:
-        cmd: . ~/.profile
-      tags: config
+      #    - name: show cuda version
+      #environment:
+      #  PATH: "/usr/local/cuda-10.1/bin${PATH:+:${PATH}}"
+      #  LD_LIBRARY_PATH: "/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+      #shell:
+      #  cmd: nvcc --version 
+      #tags: config
 
-    - name: show cuda version
-      shell:
-        cmd: nvcc --version 
-      tags: config
-
-    - name: show nvidia-smi tool
-      shell:
-        cmd: nvidia-smi
-      tags: config
+      #- name: show nvidia-smi tool
+      #environment:
+      #  PATH: "/usr/local/cuda-10.1/bin${PATH:+:${PATH}}"
+      #  LD_LIBRARY_PATH: "/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+      #shell:
+      #  cmd: nvidia-smi
+      #tags: config

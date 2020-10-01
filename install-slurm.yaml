@@ -76,6 +76,7 @@
         packages:
         - chrony
         - atop
+        - bc
         - htop
         - netdata
         - irqbalance
@@ -94,13 +95,14 @@
         packages:
         - chrony
         - atop
+        - bc
         - htop
         - netdata
         - tuned
         - irqbalance
         - nfs-common  
         - slurm-wlm
-        - openjdk-8-jre-headless
+        - openjdk-8-jdk-headless
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
       tags: packages
 
@@ -204,6 +206,23 @@
       shell:
         cmd: tuned-adm profile throughput-performance
       tags: tune
+
+    - name: Create and modify permissions for mountpoint
+      file:
+        path: /nfs
+        state: directory
+        owner: slurm
+        group: slurm
+        mode: u=rwX,g=rX,o=rX
+        recurse: yes
+
+    - name: Mount NFS Share for running slurm jobs
+      mount:
+        path: /nfs
+        src: 172.24.93.210:/data
+        fstype: nfs
+        opts: rw,bg,hard,nointr,rsize=32768,wsize=32768,timeo=600
+        state: mounted
 
     - name: Create and modify permissions spool directory
       file:

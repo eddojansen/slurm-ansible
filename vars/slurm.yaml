@@ -1,6 +1,6 @@
 CONTROLMACHINE: ejansen-1
 CLUSTERNAME: cluster1
-NODENAME:  ejansen-[1-2]
+NODENAME:  ejansen-[1-4]
 CPUS: 8 # slurmd -C
 REALMEMORY: 30100 # slurmd -C
 SOCKETS: 1 # slurmd -C
